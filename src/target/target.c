@@ -712,10 +712,13 @@ static int default_check_reset(struct target *target)
  * Keep in sync */
 int target_examine_one(struct target *target)
 {
+	LOG_TARGET_INFO(target, "Examination started.");
+
 	target_call_event_callbacks(target, TARGET_EVENT_EXAMINE_START);
 
 	int retval = target->type->examine(target);
 	if (retval != ERROR_OK) {
+		LOG_TARGET_ERROR(target, "Examination failed. examine() -> %d", retval);
 		target_reset_examined(target);
 		target_call_event_callbacks(target, TARGET_EVENT_EXAMINE_FAIL);
 		return retval;
@@ -3038,7 +3041,7 @@ static int handle_target(void *priv)
 			target_reset_examined(target);
 			retval = target_examine_one(target);
 			if (retval != ERROR_OK) {
-				LOG_TARGET_DEBUG(target, "Examination failed. Polling again in %dms",
+				LOG_TARGET_DEBUG(target, "Polling again in %dms",
 					target->backoff.interval);
 				return retval;
 			}
